@@ -24,7 +24,6 @@ class GMM:
 
     def __init__(self, data, ncomp):
 
-
         self.__data = data
         self.__K = ncomp
         self.__N, self.__D = data.shape[0], data.shape[1]
