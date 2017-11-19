@@ -41,12 +41,12 @@ class GMM:
 
         self.likelihood = 0
 
-    def fit(self, nsteps=1000):
+    def fit(self, max_steps=500):
         """
         Fit the multivariate normal distributions
-        :param nsteps: number of iterations
+        :param max_steps: maximum number of iterations
         """
-        for _ in range(nsteps):
+        for _ in range(max_steps):
             # E step
             self.__update_gamma()
 
@@ -59,6 +59,10 @@ class GMM:
             self.__update_distributions()
             self.__compute_likelihood()
             print(self.likelihood)
+
+            # check convergence
+            if abs(self.likelihood - self.__likelihood_old) <= 1e-7:
+                return
 
     def __update_gamma(self):
         """
@@ -114,6 +118,9 @@ class GMM:
         """
         Compute the log likelihood
         """
+        # save the old likelihood
+        self.__likelihood_old = self.likelihood
+
         probs = np.ndarray((self.__N, self.__K))
         for k in range(self.__K):
             probs[:, k] = self.pi[k] * self.distributions[k].pdf(self.__data)
@@ -125,7 +132,7 @@ if __name__ == "__main__":
     input_folder = "a2/"
     file_name = "zebra"
     output_folder = "results/"
-    nsteps = 100
+    max_steps = 100
 
     # Load data
     data, image = io_data.read_data(input_folder + file_name + ".txt", False)
@@ -135,7 +142,7 @@ if __name__ == "__main__":
 
     # Fit GMM model
     gmm = GMM(image, 2)
-    gmm.fit(nsteps)
+    gmm.fit(max_steps)
 
     # Generate mask
     mask = np.argmax(gmm.gamma, axis=1)
